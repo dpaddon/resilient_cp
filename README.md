@@ -11,3 +11,9 @@ When the script is first run, it will create a JSON file to keep track of which 
 
 In the case of a bad network connection, the script will sleep for 15 minutes before reattempting to transfer the file up to max_retries times.
 
+## TODO:
+
+* Update repository name
+* Add string escaping for source paths
+* Improve network connection checking
+
