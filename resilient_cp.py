@@ -12,13 +12,14 @@ import time
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', datefmt='%d/%m/%Y %H:%M:%S', level="INFO")
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', datefmt='%d/%m/%Y %H:%M:%S', level="DEBUG")
 
 
 def resilient_copy(source,
                 target,
                 max_retries=5,
-                source_json_path=None):
+                source_json_path=None,
+                limit=10000):
     """
     Use CP to transfer files in a resilient manner, without duplication
 
@@ -27,6 +28,7 @@ def resilient_copy(source,
         target             : target directory.
         max_retries        : how many times to attempt to transfer each file
         source_json_path   : optional JSON containing flags of which files have been transferred
+        limit              : bandwidth limit for scp in kbit/s
     Returns:
         0 if successful in transferring all files; else 1
     """
@@ -79,10 +81,11 @@ def resilient_copy(source,
 
                         # If necessary, make the parent directories
                         head_path, tail_path = os.path.split(target_path)
+                        head_path = head_path.replace(" ", "\ ")
                         if not os.path.exists(head_path):
                             subprocess.call(f"mkdir -p {head_path}", shell=True)
 
-                        return_code = subprocess.check_output(f"cp {file} {target_path}", shell=True)
+                        return_code = subprocess.check_output(f"scp -l {limit} {file} {head_path}", shell=True)
 
                         # If we haven't excepted out, assume the file transfer was successful
                         files_dict[file]=True
@@ -124,6 +127,7 @@ if __name__=="__main__":
     parser.add_argument("-s", "--source", default=None, type=str)
     parser.add_argument("-t", "--target", default=None, type=str)
     parser.add_argument("-m", "--max_retries", default=2, type=int)
+    parser.add_argument("-l", "--limit", default=10000, type=int)
     parser.add_argument("-j", "--source_json", default=None, type=str)
 
     args = parser.parse_args()
@@ -132,5 +136,6 @@ if __name__=="__main__":
     TARGET_DIR = args.target
     max_retries = args.max_retries
     source_json_path = args.source_json
+    limit = args.limit
 
-    resilient_copy(SOURCE_DIR, TARGET_DIR, max_retries, source_json_path)
+    resilient_copy(SOURCE_DIR, TARGET_DIR, max_retries, source_json_path, limit)
