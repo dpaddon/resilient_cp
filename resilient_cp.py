@@ -80,12 +80,13 @@ def resilient_copy(source,
                         logger.debug("Transferring file %s to %s", file, target_path)
 
                         # If necessary, make the parent directories
-                        head_path, tail_path = os.path.split(target_path)
-                        head_path = head_path.replace(" ", "\ ")
-                        if not os.path.exists(head_path):
-                            subprocess.call(f"mkdir -p {head_path}", shell=True)
+                        target_head_path, target_tail_path = os.path.split(target_path)
+                        target_head_path = target_head_path.replace(" ", "\ ")
+                        if not os.path.exists(target_head_path):
+                            subprocess.call(f"mkdir -p {target_head_path}", shell=True)
 
-                        return_code = subprocess.check_output(f"scp -l {limit} {file} {head_path}", shell=True)
+                        source_file_path = file.replace(" ", "\ ")
+                        return_code = subprocess.check_output(f"scp -l {limit} {source_file_path} {target_head_path}", shell=True)
 
                         # If we haven't excepted out, assume the file transfer was successful
                         files_dict[file]=True
@@ -103,10 +104,10 @@ def resilient_copy(source,
 
                         # Test network connection - if the target path is not mounted, 
                         # we'll assume we've got a connection issue and sleep 15 mins
-                        if not os.path.ismount(target_path):
-                            logger.warning("Connection to mounted drive failed")
-                            logger.warning("Sleeping for 15 mins")
-                            time.sleep(900)
+                        # if not os.path.ismount(target_path):
+                        #     logger.warning("Connection to mounted drive failed")
+                        #     logger.warning("Sleeping for 15 mins")
+                        #     time.sleep(900)
 
     print("Done.")
     

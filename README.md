@@ -14,6 +14,5 @@ In the case of a bad network connection, the script will sleep for 15 minutes be
 ## TODO:
 
 * Update repository name
-* Add string escaping for source paths
 * Improve network connection checking
 
